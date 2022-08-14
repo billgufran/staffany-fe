@@ -9,12 +9,10 @@ import DataTable from "react-data-table-component";
 import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
-import Fab from "@material-ui/core/Fab";
-import AddIcon from "@material-ui/icons/Add";
-import { useHistory } from "react-router-dom";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Alert from "@material-ui/lab/Alert";
 import { Link as RouterLink } from "react-router-dom";
+import { Button } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,8 +22,16 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     bottom: 40,
     right: 40,
-    backgroundColor: 'white',
-    color: theme.color.turquoise
+    backgroundColor: "white",
+    color: theme.color.turquoise,
+  },
+  publishBtn: {
+    backgroundColor: theme.color.turqouise,
+    color: "white",
+  },
+  addBtn: {
+    color: theme.color.turqouise,
+    borderColor: theme.color.turqouise,
   },
 }));
 
@@ -56,7 +62,6 @@ const ActionButton: FunctionComponent<ActionButtonProps> = ({
 
 const Shift = () => {
   const classes = useStyles();
-  const history = useHistory();
 
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -156,27 +161,36 @@ const Shift = () => {
           <CardContent>
             {errMsg.length > 0 ? (
               <Alert severity="error">{errMsg}</Alert>
-            ) : (
-              <></>
-            )}
+            ) : null}
             <DataTable
               title="Shifts"
               columns={columns}
               data={rows}
               pagination
               progressPending={isLoading}
+              actions={[
+                <Button
+                  className={classes.addBtn}
+                  variant="outlined"
+                  component={RouterLink}
+                  to="/shift/add"
+                  // disabled={isWeekPublished}
+                >
+                  Add Shift
+                </Button>,
+                <Button
+                  className={classes.publishBtn}
+                  variant="contained"
+                  onClick={() => alert("Publish")}
+                  // disabled={isWeekPublished || rows.length === 0}
+                >
+                  Publish
+                </Button>,
+              ]}
             />
           </CardContent>
         </Card>
       </Grid>
-      <Fab
-        size="medium"
-        aria-label="add"
-        className={classes.fab}
-        onClick={() => history.push("/shift/add")}
-      >
-        <AddIcon />
-      </Fab>
       <ConfirmDialog
         title="Delete Confirmation"
         description={`Do you want to delete this data ?`}
