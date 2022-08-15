@@ -25,6 +25,7 @@ import {
   updateShiftById,
 } from "../helper/api/shift";
 import { AccessTime } from "@material-ui/icons";
+import { parseDate } from "../helper/utils";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -153,12 +154,16 @@ const ShiftForm = () => {
       const formattedDate = format(date!, "yyyy-MM-dd");
       const formattedStartTime = format(startTime!, "HH:mm");
       const formattedEndTime = format(endTime!, "HH:mm");
+      const weekNumber = parseDate(
+        new Date(formattedDate)
+      ).weekNumber.toString();
 
       const payload = {
         name,
         date: formattedDate,
         startTime: formattedStartTime,
         endTime: formattedEndTime,
+        weekId: weekNumber,
       };
 
       if (id) {
@@ -198,9 +203,7 @@ const ShiftForm = () => {
           <CardContent>
             {errMsg!.length > 0 ? (
               <Alert severity="error">{errMsg}</Alert>
-            ) : (
-              <></>
-            )}
+            ) : null}
             <form id="myForm" noValidate onSubmit={onSubmit}>
               {isLoading ? (
                 <CircularProgress />
