@@ -5,9 +5,8 @@ import { deleteShiftById } from "../helper/api/shift";
 import DataTable from "react-data-table-component";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
-import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
-import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import ConfirmDialog from "../components/ConfirmDialog";
+import WeekSelector from "../components/WeekSelector";
 import Alert from "@material-ui/lab/Alert";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -60,6 +59,7 @@ interface ActionButtonProps {
   onDelete: () => void;
   isDisabled?: boolean;
 }
+
 const ActionButton: FunctionComponent<ActionButtonProps> = ({
   id,
   onDelete,
@@ -131,7 +131,7 @@ const Shift = () => {
 
   const [rows, setRows] = useState([]);
   const [currentWeek, setCurrentWeek] = useState<Week>({
-    id: parseDate().weekNumber.toString(),
+    id: parseDate().UTCWeekNumber.toString(),
     isPublished: undefined,
     publishedAt: undefined,
   });
@@ -262,37 +262,37 @@ const Shift = () => {
     }
   };
 
-  const WeekSelector = (
-    <>
-      <IconButton
-        className={classes.weekSelectorBtn}
-        aria-label="previous week"
-        onClick={() => {
-          setCurrentWeek((prev) => ({
-            ...prev,
-            id: (parseInt(prev.id) - 1).toString(),
-          }));
-        }}
-      >
-        <KeyboardArrowLeftIcon />
-      </IconButton>
-      <Typography variant="h6" component="h6">
-        {currentWeek?.id}
-      </Typography>
-      <IconButton
-        className={classes.weekSelectorBtn}
-        aria-label="next week"
-        onClick={() => {
-          setCurrentWeek((prev) => ({
-            ...prev,
-            id: (parseInt(prev.id) + 1).toString(),
-          }));
-        }}
-      >
-        <KeyboardArrowRightIcon />
-      </IconButton>
-    </>
-  );
+  // const WeekSelector = (
+  //   <>
+  //     <IconButton
+  //       className={classes.weekSelectorBtn}
+  //       aria-label="previous week"
+  //       onClick={() => {
+  //         setCurrentWeek((prev) => ({
+  //           ...prev,
+  //           id: (parseInt(prev.id) - 1).toString(),
+  //         }));
+  //       }}
+  //     >
+  //       <KeyboardArrowLeftIcon />
+  //     </IconButton>
+  //     <Typography variant="h6" component="h6">
+  //       {currentWeek?.id}
+  //     </Typography>
+  //     <IconButton
+  //       className={classes.weekSelectorBtn}
+  //       aria-label="next week"
+  //       onClick={() => {
+  //         setCurrentWeek((prev) => ({
+  //           ...prev,
+  //           id: (parseInt(prev.id) + 1).toString(),
+  //         }));
+  //       }}
+  //     >
+  //       <KeyboardArrowRightIcon />
+  //     </IconButton>
+  //   </>
+  // );
 
   return (
     <Grid container spacing={3}>
@@ -303,7 +303,17 @@ const Shift = () => {
               <Alert severity="error">{errMsg}</Alert>
             ) : null}
             <DataTable
-              title={WeekSelector}
+              title={
+                <WeekSelector
+                  weekNumber={currentWeek.id}
+                  onButtonClick={(updatedWeekNumber) => {
+                    setCurrentWeek((prev) => ({
+                      ...prev,
+                      id: updatedWeekNumber,
+                    }));
+                  }}
+                />
+              }
               columns={columns}
               data={rows}
               pagination
