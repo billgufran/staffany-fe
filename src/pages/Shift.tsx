@@ -275,6 +275,16 @@ const Shift = () => {
               data={rows}
               pagination
               progressPending={isLoading}
+              customStyles={{
+                header: {
+                  style: {
+                    "& > div:nth-child(-n+2)": {
+                      display: "flex",
+                      gap: "7px",
+                    },
+                  },
+                },
+              }}
               title={
                 <WeekSelector
                   weekNumber={currentWeek.id}

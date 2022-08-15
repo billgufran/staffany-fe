@@ -13,6 +13,7 @@ const useStyles = makeStyles((theme) => ({
     padding: "3px",
   },
   weekRange: {
+    margin: "0 17px",
     "&.published": {
       color: theme.color.turqouise,
     },
