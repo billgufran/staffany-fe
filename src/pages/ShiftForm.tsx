@@ -149,12 +149,10 @@ const ShiftForm = () => {
   };
 
   const handleStartTimeChange = (v: Date | null) => {
-    // console.log("startTime", v?.toISOString())
     setValue("startTime", v);
   };
 
   const handleEndTimeChange = (v: Date | null) => {
-    // console.log("endTime", v?.toISOString())
     setValue("endTime", v);
   };
 

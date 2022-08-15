@@ -218,8 +218,6 @@ const Shift = () => {
         throw new Error("ID is null");
       }
 
-      console.log(deleteDataById);
-
       await deleteShiftById(selectedId);
 
       const tempRows = [...rows];
