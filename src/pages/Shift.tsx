@@ -13,6 +13,8 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import Alert from "@material-ui/lab/Alert";
 import { Link as RouterLink } from "react-router-dom";
 import { Button } from "@material-ui/core";
+import { parseDate } from "../helper/utils";
+import { getWeekById } from "../helper/api/week";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -38,10 +40,12 @@ const useStyles = makeStyles((theme) => ({
 interface ActionButtonProps {
   id: string;
   onDelete: () => void;
+  isDisabled?: boolean;
 }
 const ActionButton: FunctionComponent<ActionButtonProps> = ({
   id,
   onDelete,
+  isDisabled,
 }) => {
   return (
     <div>
@@ -50,20 +54,33 @@ const ActionButton: FunctionComponent<ActionButtonProps> = ({
         aria-label="delete"
         component={RouterLink}
         to={`/shift/${id}/edit`}
+        disabled={isDisabled}
       >
         <EditIcon fontSize="small" />
       </IconButton>
-      <IconButton size="small" aria-label="delete" onClick={() => onDelete()}>
+      <IconButton
+        size="small"
+        aria-label="delete"
+        onClick={() => onDelete()}
+        disabled={isDisabled}
+      >
         <DeleteIcon fontSize="small" />
       </IconButton>
     </div>
   );
 };
 
+interface Week {
+  id: string;
+  isPublished?: boolean;
+  publishedAt?: string;
+}
+
 const Shift = () => {
   const classes = useStyles();
 
   const [rows, setRows] = useState([]);
+  const [currentWeek, setCurrentWeek] = useState<Week | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
@@ -82,12 +99,20 @@ const Shift = () => {
   };
 
   useEffect(() => {
+    const { weekNumber } = parseDate();
+
     const getData = async () => {
       try {
         setIsLoading(true);
         setErrMsg("");
-        const { results } = await getShifts();
-        setRows(results);
+        const { results } = await getWeekById(weekNumber.toString());
+        setCurrentWeek((prev) => ({
+          ...prev,
+          id: results.id,
+          isPublished: results.isPublished,
+          publishedAt: results.publishedAt,
+        }));
+        setRows(results.shifts);
       } catch (error) {
         const message = getErrorMessage(error);
         setErrMsg(message);
@@ -123,7 +148,11 @@ const Shift = () => {
     {
       name: "Actions",
       cell: (row: any) => (
-        <ActionButton id={row.id} onDelete={() => onDeleteClick(row.id)} />
+        <ActionButton
+          id={row.id}
+          onDelete={() => onDeleteClick(row.id)}
+          isDisabled={row.isPublished}
+        />
       ),
     },
   ];
@@ -163,7 +192,7 @@ const Shift = () => {
               <Alert severity="error">{errMsg}</Alert>
             ) : null}
             <DataTable
-              title="Shifts"
+              title={currentWeek?.id}
               columns={columns}
               data={rows}
               pagination
@@ -174,7 +203,7 @@ const Shift = () => {
                   variant="outlined"
                   component={RouterLink}
                   to="/shift/add"
-                  // disabled={isWeekPublished}
+                  disabled={currentWeek?.isPublished}
                 >
                   Add Shift
                 </Button>,
@@ -182,7 +211,7 @@ const Shift = () => {
                   className={classes.publishBtn}
                   variant="contained"
                   onClick={() => alert("Publish")}
-                  // disabled={isWeekPublished || rows.length === 0}
+                  disabled={currentWeek?.isPublished || rows.length === 0}
                 >
                   Publish
                 </Button>,
