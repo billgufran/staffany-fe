@@ -171,7 +171,7 @@ const ShiftForm = () => {
       } else {
         await createShifts(payload);
       }
-      history.push("/shift");
+      history.push(`/shift?week=${weekNumber}`);
     } catch (error) {
       const message = getErrorMessage(error);
       setErrMsg(message);
@@ -193,17 +193,14 @@ const ShiftForm = () => {
             <Button
               className={classes.backBtn}
               variant="contained"
-              component={RouterLink}
-              to="/shift"
+              onClick={() => history.goBack()}
               disabled={submitLoading}
             >
               Back
             </Button>
           </CardContent>
           <CardContent>
-            {errMsg!.length > 0 ? (
-              <Alert severity="error">{errMsg}</Alert>
-            ) : null}
+            {errMsg!.length > 0 && <Alert severity="error">{errMsg}</Alert>}
             <form id="myForm" noValidate onSubmit={onSubmit}>
               {isLoading ? (
                 <CircularProgress />
