@@ -314,7 +314,7 @@ const Shift = () => {
                   publishedDate={currentWeek?.publishedAt}
                   isAddDisabled={currentWeek?.isPublished || isLoading}
                   isPublishDisabled={
-                    currentWeek?.isPublished || isLoading || rows.length === 0
+                    currentWeek?.isPublished || isLoading || rows?.length === 0
                   }
                 />
               }
