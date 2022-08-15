@@ -12,21 +12,31 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "6px",
     padding: "3px",
   },
+  weekRange: {
+    "&.published": {
+      color: theme.color.turqouise,
+    },
+  },
 }));
 
 interface WeekSelectorProps {
   weekNumber: string;
+  isWeekPublished?: boolean;
   onButtonClick: (weekNumber: string) => void;
 }
 
 const WeekSelector: FunctionComponent<WeekSelectorProps> = ({
   weekNumber: _weekNumber,
+  isWeekPublished,
   onButtonClick,
 }) => {
   const classes = useStyles();
   const weekNumber = parseInt(_weekNumber);
   const { weekStartDate, weekEndDate } = parseUTCWeekNumber(weekNumber);
-  const weekRangeString = `${format(weekStartDate, "LLL dd")} - ${format(weekEndDate, "LLL dd")}`;
+  const weekRangeString = `${format(weekStartDate, "LLL dd")} - ${format(
+    weekEndDate,
+    "LLL dd"
+  )}`;
 
   return (
     <>
@@ -37,7 +47,13 @@ const WeekSelector: FunctionComponent<WeekSelectorProps> = ({
       >
         <KeyboardArrowLeftIcon />
       </IconButton>
-      <Typography variant="h6" component="h6">
+      <Typography
+        variant="h6"
+        component="h6"
+        className={
+          isWeekPublished ? classes.weekRange + " published" : classes.weekRange
+        }
+      >
         {weekRangeString}
       </Typography>
       <IconButton

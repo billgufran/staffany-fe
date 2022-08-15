@@ -262,38 +262,6 @@ const Shift = () => {
     }
   };
 
-  // const WeekSelector = (
-  //   <>
-  //     <IconButton
-  //       className={classes.weekSelectorBtn}
-  //       aria-label="previous week"
-  //       onClick={() => {
-  //         setCurrentWeek((prev) => ({
-  //           ...prev,
-  //           id: (parseInt(prev.id) - 1).toString(),
-  //         }));
-  //       }}
-  //     >
-  //       <KeyboardArrowLeftIcon />
-  //     </IconButton>
-  //     <Typography variant="h6" component="h6">
-  //       {currentWeek?.id}
-  //     </Typography>
-  //     <IconButton
-  //       className={classes.weekSelectorBtn}
-  //       aria-label="next week"
-  //       onClick={() => {
-  //         setCurrentWeek((prev) => ({
-  //           ...prev,
-  //           id: (parseInt(prev.id) + 1).toString(),
-  //         }));
-  //       }}
-  //     >
-  //       <KeyboardArrowRightIcon />
-  //     </IconButton>
-  //   </>
-  // );
-
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
@@ -303,9 +271,14 @@ const Shift = () => {
               <Alert severity="error">{errMsg}</Alert>
             ) : null}
             <DataTable
+              columns={columns}
+              data={rows}
+              pagination
+              progressPending={isLoading}
               title={
                 <WeekSelector
                   weekNumber={currentWeek.id}
+                  isWeekPublished={currentWeek?.isPublished}
                   onButtonClick={(updatedWeekNumber) => {
                     setCurrentWeek((prev) => ({
                       ...prev,
@@ -314,10 +287,6 @@ const Shift = () => {
                   }}
                 />
               }
-              columns={columns}
-              data={rows}
-              pagination
-              progressPending={isLoading}
               actions={[
                 ...(currentWeek?.publishedAt
                   ? [
