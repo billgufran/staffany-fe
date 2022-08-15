@@ -116,11 +116,11 @@ const ShiftForm = () => {
       const startTime =
         format(new Date(currentData.date), "yyyy-MM-dd") +
         " " +
-        format(new Date(currentData!.startTime), "HH:mm:ss");
+        format(new Date(currentData!.startTime), "HH:mm");
       const endTime =
         format(new Date(currentData.date), "yyyy-MM-dd") +
         " " +
-        format(new Date(currentData!.endTime), "HH:mm:ss");
+        format(new Date(currentData!.endTime), "HH:mm");
 
       setValue("name", currentData.name);
       setValue("date", currentData.date);
@@ -139,24 +139,22 @@ const ShiftForm = () => {
     const { startTime, endTime } = getValues(["startTime", "endTime"]);
     setValue(
       "startTime",
-      new Date(
-        `${format(date!, "yyyy-MM-dd")} ${format(startTime!, "HH:mm:ss.SSS")}`
-      )
+      new Date(`${format(date!, "yyyy-MM-dd")} ${format(startTime!, "HH:mm")}`)
     );
     setValue(
       "endTime",
-      new Date(
-        `${format(date!, "yyyy-MM-dd")} ${format(endTime!, "HH:mm:ss.SSS")}`
-      )
+      new Date(`${format(date!, "yyyy-MM-dd")} ${format(endTime!, "HH:mm")}`)
     );
     setValue("date", date);
   };
 
   const handleStartTimeChange = (v: Date | null) => {
+    // console.log("startTime", v?.toISOString())
     setValue("startTime", v);
   };
 
   const handleEndTimeChange = (v: Date | null) => {
+    // console.log("endTime", v?.toISOString())
     setValue("endTime", v);
   };
 
