@@ -27,13 +27,6 @@ const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: 275,
   },
-  fab: {
-    position: "absolute",
-    bottom: 40,
-    right: 40,
-    backgroundColor: "white",
-    color: theme.color.turquoise,
-  },
   publishBtn: {
     backgroundColor: theme.color.turqouise,
     color: "white",
@@ -261,11 +254,13 @@ const Shift = () => {
       name: "Start Time",
       selector: "startTime",
       sortable: true,
+      format: (row: any) => format(new Date(row.startTime), "HH:mm"),
     },
     {
       name: "End Time",
       selector: "endTime",
       sortable: true,
+      format: (row: any) => format(new Date(row.endTime), "HH:mm"),
     },
     {
       name: "Actions",

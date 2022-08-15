@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import { Button, CardActions } from "@material-ui/core";
-import { Link as RouterLink, useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import DateFnsUtils from "@date-io/date-fns";
 import { useForm } from "react-hook-form";
@@ -30,11 +30,6 @@ import { parseDate } from "../helper/utils";
 const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: 275,
-  },
-  fab: {
-    position: "absolute",
-    bottom: 40,
-    right: 40,
   },
   right: {
     marginLeft: "auto",
@@ -85,12 +80,11 @@ const ShiftForm = () => {
   const [errMsg, setErrMsg] = useState<string | null>("");
   const [currentData, setCurrentData] = useState<any | null>(null);
 
-  const { register, handleSubmit, errors, setValue, watch } = useForm<FormData>(
-    {
+  const { register, handleSubmit, errors, setValue, watch, getValues } =
+    useForm<FormData>({
       resolver: joiResolver(formSchema),
       defaultValues,
-    }
-  );
+    });
 
   useEffect(() => {
     const getDetail = async () => {
@@ -120,9 +114,13 @@ const ShiftForm = () => {
   useEffect(() => {
     if (currentData !== null) {
       const startTime =
-        format(new Date(), "yyyy-MM-dd") + " " + currentData.startTime;
+        format(new Date(currentData.date), "yyyy-MM-dd") +
+        " " +
+        format(new Date(currentData!.startTime), "HH:mm:ss");
       const endTime =
-        format(new Date(), "yyyy-MM-dd") + " " + currentData.endTime;
+        format(new Date(currentData.date), "yyyy-MM-dd") +
+        " " +
+        format(new Date(currentData!.endTime), "HH:mm:ss");
 
       setValue("name", currentData.name);
       setValue("date", currentData.date);
@@ -138,11 +136,26 @@ const ShiftForm = () => {
   };
 
   const handleDateChange = (date: Date | null) => {
+    const { startTime, endTime } = getValues(["startTime", "endTime"]);
+    setValue(
+      "startTime",
+      new Date(
+        `${format(date!, "yyyy-MM-dd")} ${format(startTime!, "HH:mm:ss.SSS")}`
+      )
+    );
+    setValue(
+      "endTime",
+      new Date(
+        `${format(date!, "yyyy-MM-dd")} ${format(endTime!, "HH:mm:ss.SSS")}`
+      )
+    );
     setValue("date", date);
   };
+
   const handleStartTimeChange = (v: Date | null) => {
     setValue("startTime", v);
   };
+
   const handleEndTimeChange = (v: Date | null) => {
     setValue("endTime", v);
   };
@@ -152,8 +165,6 @@ const ShiftForm = () => {
       setSubmitLoading(true);
       setErrMsg("");
       const formattedDate = format(date!, "yyyy-MM-dd");
-      const formattedStartTime = format(startTime!, "HH:mm");
-      const formattedEndTime = format(endTime!, "HH:mm");
       const weekNumber = parseDate(
         new Date(formattedDate)
       ).UTCWeekNumber.toString();
@@ -161,8 +172,8 @@ const ShiftForm = () => {
       const payload = {
         name,
         date: formattedDate,
-        startTime: formattedStartTime,
-        endTime: formattedEndTime,
+        startTime: startTime!.toISOString(),
+        endTime: endTime!.toISOString(),
         weekId: weekNumber,
       };
 
