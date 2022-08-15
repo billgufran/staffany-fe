@@ -1,20 +1,24 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
-import Grid from "@material-ui/core/Grid";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
 import { makeStyles } from "@material-ui/core/styles";
 import { getErrorMessage } from "../helper/error/index";
-import { deleteShiftById, getShifts } from "../helper/api/shift";
+import { deleteShiftById } from "../helper/api/shift";
 import DataTable from "react-data-table-component";
-import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Alert from "@material-ui/lab/Alert";
 import { Link as RouterLink } from "react-router-dom";
-import { Button } from "@material-ui/core";
+import {
+  Button,
+  Typography,
+  IconButton,
+  CardContent,
+  Card,
+  Grid,
+} from "@material-ui/core";
 import { parseDate } from "../helper/utils";
-import { getWeekById } from "../helper/api/week";
+import { getWeekById, publishWeek } from "../helper/api/week";
+import { format } from "date-fns";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,6 +38,13 @@ const useStyles = makeStyles((theme) => ({
   addBtn: {
     color: theme.color.turqouise,
     borderColor: theme.color.turqouise,
+  },
+  publishedDate: {
+    color: theme.color.turqouise,
+    fontWeight: 300,
+  },
+  tableHeaderActionsContiner: {
+    display: "flex",
   },
 }));
 
@@ -70,6 +81,38 @@ const ActionButton: FunctionComponent<ActionButtonProps> = ({
   );
 };
 
+// const TableHeaderActions = () => {
+//   const classes = useStyles();
+
+//   return (
+//     <div>
+//       {currentWeek?.publishedAt ? (
+//         <Typography color="inherit" className={classes.publishedDate}>
+//           Week published on{" "}
+//           {format(new Date(currentWeek.publishedAt), "dd LLL yyyy, hh:mm aa")}
+//         </Typography>
+//       ) : null}
+//       <Button
+//         className={classes.addBtn}
+//         variant="outlined"
+//         component={RouterLink}
+//         to="/shift/add"
+//         disabled={currentWeek?.isPublished}
+//       >
+//         Add Shift
+//       </Button>
+//       <Button
+//         className={classes.publishBtn}
+//         variant="contained"
+//         onClick={onPublishWeek}
+//         disabled={currentWeek?.isPublished || rows.length === 0}
+//       >
+//         Publish
+//       </Button>
+//     </div>
+//   );
+// };
+
 interface Week {
   id: string;
   isPublished?: boolean;
@@ -96,6 +139,32 @@ const Shift = () => {
   const onCloseDeleteDialog = () => {
     setSelectedId(null);
     setShowDeleteConfirm(false);
+  };
+
+  const onPublishWeek = async () => {
+    try {
+      setIsLoading(true);
+      setErrMsg("");
+      const { results } = await publishWeek({
+        id: currentWeek!.id,
+        isPublished: true,
+        publishedAt: new Date().toISOString(),
+      });
+      setCurrentWeek(
+        (prev) =>
+          ({
+            ...prev,
+            isPublished: results.isPublished,
+            publishedAt: results.publishedAt,
+          } as Week)
+      );
+      setRows(results.shifts);
+    } catch (error) {
+      const message = getErrorMessage(error);
+      setErrMsg(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -198,6 +267,20 @@ const Shift = () => {
               pagination
               progressPending={isLoading}
               actions={[
+                ...(currentWeek?.publishedAt
+                  ? [
+                      <Typography
+                        color="inherit"
+                        className={classes.publishedDate}
+                      >
+                        Week published on{" "}
+                        {format(
+                          new Date(currentWeek.publishedAt),
+                          "dd LLL yyyy, hh:mm aa"
+                        )}
+                      </Typography>,
+                    ]
+                  : []),
                 <Button
                   className={classes.addBtn}
                   variant="outlined"
@@ -210,7 +293,7 @@ const Shift = () => {
                 <Button
                   className={classes.publishBtn}
                   variant="contained"
-                  onClick={() => alert("Publish")}
+                  onClick={onPublishWeek}
                   disabled={currentWeek?.isPublished || rows.length === 0}
                 >
                   Publish
