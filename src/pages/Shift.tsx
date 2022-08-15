@@ -21,6 +21,7 @@ import { parseDate } from "../helper/utils";
 import { getWeekById, publishWeek } from "../helper/api/week";
 import { format } from "date-fns";
 import { useQueryParam } from "../helper/hooks";
+import { CheckCircle } from "react-feather";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -41,9 +42,15 @@ const useStyles = makeStyles((theme) => ({
     color: theme.color.turqouise,
     borderColor: theme.color.turqouise,
   },
-  publishedDate: {
+  publishedDateContainer: {
     color: theme.color.turqouise,
+    display: "flex",
+    alignItems: "center",
+  },
+  publishedDate: {
     fontWeight: 300,
+    marginLeft: "7px",
+    marginRight: "4px",
   },
 }));
 
@@ -99,10 +106,13 @@ const TableHeaderActions: FunctionComponent<TableHeaderActionsProps> = ({
   return (
     <>
       {publishedDate && (
-        <Typography color="inherit" className={classes.publishedDate}>
-          Week published on{" "}
-          {format(new Date(publishedDate), "dd LLL yyyy, hh:mm aa")}
-        </Typography>
+        <div className={classes.publishedDateContainer}>
+          <CheckCircle size={15} />
+          <Typography color="inherit" className={classes.publishedDate}>
+            Week published on{" "}
+            {format(new Date(publishedDate), "dd LLL yyyy, hh:mm aa")}
+          </Typography>
+        </div>
       )}
       <Button
         className={classes.addBtn}
