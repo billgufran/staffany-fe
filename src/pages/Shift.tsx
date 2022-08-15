@@ -5,6 +5,8 @@ import { deleteShiftById } from "../helper/api/shift";
 import DataTable from "react-data-table-component";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
+import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Alert from "@material-ui/lab/Alert";
 import { Link as RouterLink } from "react-router-dom";
@@ -38,6 +40,11 @@ const useStyles = makeStyles((theme) => ({
   addBtn: {
     color: theme.color.turqouise,
     borderColor: theme.color.turqouise,
+  },
+  weekSelectorBtn: {
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    padding: "3px",
   },
   publishedDate: {
     color: theme.color.turqouise,
@@ -123,7 +130,11 @@ const Shift = () => {
   const classes = useStyles();
 
   const [rows, setRows] = useState([]);
-  const [currentWeek, setCurrentWeek] = useState<Week | null>(null);
+  const [currentWeek, setCurrentWeek] = useState<Week>({
+    id: parseDate().weekNumber.toString(),
+    isPublished: undefined,
+    publishedAt: undefined,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
@@ -167,31 +178,30 @@ const Shift = () => {
     }
   };
 
+  const getData = async (weekId: string) => {
+    setIsLoading(true);
+    setErrMsg("");
+
+    try {
+      const { results } = await getWeekById(weekId);
+      setCurrentWeek((prev) => ({
+        ...prev,
+        id: weekId,
+        isPublished: results?.isPublished,
+        publishedAt: results?.publishedAt,
+      }));
+      setRows(results?.shifts ?? []);
+    } catch (error) {
+      const message = getErrorMessage(error);
+      setErrMsg(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const { weekNumber } = parseDate();
-
-    const getData = async () => {
-      try {
-        setIsLoading(true);
-        setErrMsg("");
-        const { results } = await getWeekById(weekNumber.toString());
-        setCurrentWeek((prev) => ({
-          ...prev,
-          id: results.id,
-          isPublished: results.isPublished,
-          publishedAt: results.publishedAt,
-        }));
-        setRows(results.shifts);
-      } catch (error) {
-        const message = getErrorMessage(error);
-        setErrMsg(message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getData();
-  }, []);
+    getData(currentWeek!.id);
+  }, [currentWeek.id]);
 
   const columns = [
     {
@@ -252,6 +262,38 @@ const Shift = () => {
     }
   };
 
+  const WeekSelector = (
+    <>
+      <IconButton
+        className={classes.weekSelectorBtn}
+        aria-label="previous week"
+        onClick={() => {
+          setCurrentWeek((prev) => ({
+            ...prev,
+            id: (parseInt(prev.id) - 1).toString(),
+          }));
+        }}
+      >
+        <KeyboardArrowLeftIcon />
+      </IconButton>
+      <Typography variant="h6" component="h6">
+        {currentWeek?.id}
+      </Typography>
+      <IconButton
+        className={classes.weekSelectorBtn}
+        aria-label="next week"
+        onClick={() => {
+          setCurrentWeek((prev) => ({
+            ...prev,
+            id: (parseInt(prev.id) + 1).toString(),
+          }));
+        }}
+      >
+        <KeyboardArrowRightIcon />
+      </IconButton>
+    </>
+  );
+
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
@@ -261,7 +303,7 @@ const Shift = () => {
               <Alert severity="error">{errMsg}</Alert>
             ) : null}
             <DataTable
-              title={currentWeek?.id}
+              title={WeekSelector}
               columns={columns}
               data={rows}
               pagination
