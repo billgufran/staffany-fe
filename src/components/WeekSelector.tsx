@@ -28,7 +28,7 @@ interface WeekSelectorProps {
 
 const WeekSelector: FunctionComponent<WeekSelectorProps> = ({
   weekNumber: _weekNumber,
-  isWeekPublished,
+  isWeekPublished = false,
   onButtonClick,
 }) => {
   const classes = useStyles();
