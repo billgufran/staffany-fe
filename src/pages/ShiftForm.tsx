@@ -156,7 +156,7 @@ const ShiftForm = () => {
       const formattedEndTime = format(endTime!, "HH:mm");
       const weekNumber = parseDate(
         new Date(formattedDate)
-      ).weekNumber.toString();
+      ).UTCWeekNumber.toString();
 
       const payload = {
         name,
