@@ -1,1 +1,1 @@
-export * from "./parseDate";
+export * from "./dateHelper";
