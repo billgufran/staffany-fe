@@ -23,15 +23,10 @@ export const parseDate = (date: Date = new Date()) => {
 
 export const parseUTCWeekNumber = (weekNumber: number) => {
   const date = new Date(weekNumber * WEEK_IN_MS - UNIX_EPOCH_MONDAY_OFFSET);
-  const day = date.getDay() || 7;
-
-  const monday =
-    day === 1 ? new Date() : new Date(date.getTime() - day * DAY_IN_MS);
-  const sunday = new Date(monday.getTime() + 6 * DAY_IN_MS);
+  const sunday = new Date(date.getTime() + 6 * DAY_IN_MS);
 
   return {
-    date,
-    weekStartDate: monday,
+    weekStartDate: date,
     weekEndDate: sunday,
   };
 };

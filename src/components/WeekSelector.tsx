@@ -26,6 +26,7 @@ const WeekSelector: FunctionComponent<WeekSelectorProps> = ({
   const classes = useStyles();
   const weekNumber = parseInt(_weekNumber);
   const { weekStartDate, weekEndDate } = parseUTCWeekNumber(weekNumber);
+  const weekRangeString = `${format(weekStartDate, "LLL dd")} - ${format(weekEndDate, "LLL dd")}`;
 
   return (
     <>
@@ -37,7 +38,7 @@ const WeekSelector: FunctionComponent<WeekSelectorProps> = ({
         <KeyboardArrowLeftIcon />
       </IconButton>
       <Typography variant="h6" component="h6">
-        {format(weekStartDate, "LLL dd")} - {format(weekEndDate, "LLL dd")}
+        {weekRangeString}
       </Typography>
       <IconButton
         className={classes.weekSelectorBtn}
