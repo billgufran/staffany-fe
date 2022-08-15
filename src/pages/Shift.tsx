@@ -8,7 +8,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import ConfirmDialog from "../components/ConfirmDialog";
 import WeekSelector from "../components/WeekSelector";
 import Alert from "@material-ui/lab/Alert";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useHistory } from "react-router-dom";
 import {
   Button,
   Typography,
@@ -20,6 +20,7 @@ import {
 import { parseDate } from "../helper/utils";
 import { getWeekById, publishWeek } from "../helper/api/week";
 import { format } from "date-fns";
+import { useQueryParam } from "../helper/hooks";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,17 +41,9 @@ const useStyles = makeStyles((theme) => ({
     color: theme.color.turqouise,
     borderColor: theme.color.turqouise,
   },
-  weekSelectorBtn: {
-    border: "1px solid #e0e0e0",
-    borderRadius: "6px",
-    padding: "3px",
-  },
   publishedDate: {
     color: theme.color.turqouise,
     fontWeight: 300,
-  },
-  tableHeaderActionsContiner: {
-    display: "flex",
   },
 }));
 
@@ -88,37 +81,49 @@ const ActionButton: FunctionComponent<ActionButtonProps> = ({
   );
 };
 
-// const TableHeaderActions = () => {
-//   const classes = useStyles();
+interface TableHeaderActionsProps {
+  onPublish: () => void;
+  publishedDate?: string;
+  isPublishDisabled?: boolean;
+  isAddDisabled?: boolean;
+}
 
-//   return (
-//     <div>
-//       {currentWeek?.publishedAt ? (
-//         <Typography color="inherit" className={classes.publishedDate}>
-//           Week published on{" "}
-//           {format(new Date(currentWeek.publishedAt), "dd LLL yyyy, hh:mm aa")}
-//         </Typography>
-//       ) : null}
-//       <Button
-//         className={classes.addBtn}
-//         variant="outlined"
-//         component={RouterLink}
-//         to="/shift/add"
-//         disabled={currentWeek?.isPublished}
-//       >
-//         Add Shift
-//       </Button>
-//       <Button
-//         className={classes.publishBtn}
-//         variant="contained"
-//         onClick={onPublishWeek}
-//         disabled={currentWeek?.isPublished || rows.length === 0}
-//       >
-//         Publish
-//       </Button>
-//     </div>
-//   );
-// };
+const TableHeaderActions: FunctionComponent<TableHeaderActionsProps> = ({
+  onPublish,
+  publishedDate,
+  isPublishDisabled,
+  isAddDisabled,
+}) => {
+  const classes = useStyles();
+
+  return (
+    <>
+      {publishedDate && (
+        <Typography color="inherit" className={classes.publishedDate}>
+          Week published on{" "}
+          {format(new Date(publishedDate), "dd LLL yyyy, hh:mm aa")}
+        </Typography>
+      )}
+      <Button
+        className={classes.addBtn}
+        variant="outlined"
+        component={RouterLink}
+        to="/shift/add"
+        disabled={isAddDisabled}
+      >
+        Add Shift
+      </Button>
+      <Button
+        className={classes.publishBtn}
+        variant="contained"
+        onClick={onPublish}
+        disabled={isPublishDisabled}
+      >
+        Publish
+      </Button>
+    </>
+  );
+};
 
 interface Week {
   id: string;
@@ -128,10 +133,12 @@ interface Week {
 
 const Shift = () => {
   const classes = useStyles();
+  const history = useHistory();
+  const queryParam = useQueryParam();
 
   const [rows, setRows] = useState([]);
   const [currentWeek, setCurrentWeek] = useState<Week>({
-    id: parseDate().UTCWeekNumber.toString(),
+    id: queryParam.get("week") || parseDate().UTCWeekNumber.toString(),
     isPublished: undefined,
     publishedAt: undefined,
   });
@@ -199,6 +206,32 @@ const Shift = () => {
     }
   };
 
+  const deleteDataById = async () => {
+    try {
+      setDeleteLoading(true);
+      setErrMsg("");
+
+      if (selectedId === null) {
+        throw new Error("ID is null");
+      }
+
+      console.log(deleteDataById);
+
+      await deleteShiftById(selectedId);
+
+      const tempRows = [...rows];
+      const idx = tempRows.findIndex((v: any) => v.id === selectedId);
+      tempRows.splice(idx, 1);
+      setRows(tempRows);
+    } catch (error) {
+      const message = getErrorMessage(error);
+      setErrMsg(message);
+    } finally {
+      setDeleteLoading(false);
+      onCloseDeleteDialog();
+    }
+  };
+
   useEffect(() => {
     getData(currentWeek!.id);
   }, [currentWeek.id]);
@@ -236,40 +269,12 @@ const Shift = () => {
     },
   ];
 
-  const deleteDataById = async () => {
-    try {
-      setDeleteLoading(true);
-      setErrMsg("");
-
-      if (selectedId === null) {
-        throw new Error("ID is null");
-      }
-
-      console.log(deleteDataById);
-
-      await deleteShiftById(selectedId);
-
-      const tempRows = [...rows];
-      const idx = tempRows.findIndex((v: any) => v.id === selectedId);
-      tempRows.splice(idx, 1);
-      setRows(tempRows);
-    } catch (error) {
-      const message = getErrorMessage(error);
-      setErrMsg(message);
-    } finally {
-      setDeleteLoading(false);
-      onCloseDeleteDialog();
-    }
-  };
-
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
         <Card className={classes.root}>
           <CardContent>
-            {errMsg.length > 0 ? (
-              <Alert severity="error">{errMsg}</Alert>
-            ) : null}
+            {errMsg.length > 0 && <Alert severity="error">{errMsg}</Alert>}
             <DataTable
               columns={columns}
               data={rows}
@@ -290,46 +295,26 @@ const Shift = () => {
                   weekNumber={currentWeek.id}
                   isWeekPublished={currentWeek?.isPublished}
                   onButtonClick={(updatedWeekNumber) => {
+                    history.push(`/shift?week=${updatedWeekNumber}`);
                     setCurrentWeek((prev) => ({
                       ...prev,
+                      isPublished: false,
+                      publishedAt: undefined,
                       id: updatedWeekNumber,
                     }));
                   }}
                 />
               }
-              actions={[
-                ...(currentWeek?.publishedAt
-                  ? [
-                      <Typography
-                        color="inherit"
-                        className={classes.publishedDate}
-                      >
-                        Week published on{" "}
-                        {format(
-                          new Date(currentWeek.publishedAt),
-                          "dd LLL yyyy, hh:mm aa"
-                        )}
-                      </Typography>,
-                    ]
-                  : []),
-                <Button
-                  className={classes.addBtn}
-                  variant="outlined"
-                  component={RouterLink}
-                  to="/shift/add"
-                  disabled={currentWeek?.isPublished}
-                >
-                  Add Shift
-                </Button>,
-                <Button
-                  className={classes.publishBtn}
-                  variant="contained"
-                  onClick={onPublishWeek}
-                  disabled={currentWeek?.isPublished || rows.length === 0}
-                >
-                  Publish
-                </Button>,
-              ]}
+              actions={
+                <TableHeaderActions
+                  onPublish={onPublishWeek}
+                  publishedDate={currentWeek?.publishedAt}
+                  isAddDisabled={currentWeek?.isPublished || isLoading}
+                  isPublishDisabled={
+                    currentWeek?.isPublished || isLoading || rows.length === 0
+                  }
+                />
+              }
             />
           </CardContent>
         </Card>
